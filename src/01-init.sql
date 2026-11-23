@@ -30,6 +30,8 @@ CREATE TABLE public.emprestimos (
 	id INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
 	livro_id INT NOT NULL,
 	cliente_id INT NOT NULL,
+	data_devolucao DATE NOT NULL,
+	devolvido_em TIMESTAMPTZ,
 	criado_em TIMESTAMPTZ NOT NULL DEFAULT now(),
 	atualizado_em TIMESTAMPTZ NOT NULL DEFAULT now(),
 
