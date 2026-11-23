@@ -15,7 +15,8 @@ CREATE TABLE public.livros (
 
 	CONSTRAINT ck_livros_status
 		CHECK (status IN ('disponivel', 'emprestado', 'danificado', 'perdido')),
-	CONSTRAINT fk_livros_autor FOREIGN KEY (autor_id) REFERENCES autores(id)
+	CONSTRAINT fk_livros_autores
+		FOREIGN KEY (autor_id) REFERENCES autores(id) ON DELETE RESTRICT
 );
 
 CREATE TABLE public.clientes (
