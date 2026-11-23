@@ -1,10 +1,15 @@
-INSERT INTO livros (nome) VALUES
-('Dom Casmuro'),
-('O Cortiço'),
-('Memórias Póstumas de Brás Cubas'),
-('Vidas Secas'),
-('Grande Sertão: Veredas');
+INSERT INTO autores (nome) VALUES
+('Machado de Assis'),
+('Aluísio Azevedo'),
+('Graciliano Ramos'),
+('João Guimarães Rosa');
 
+INSERT INTO livros (nome, autor_id, status) VALUES
+('Dom Casmurro', 1, 'emprestado'),
+('O Cortiço', 2, 'emprestado'),
+('Memórias Póstumas de Brás Cubas', 1, 'disponivel'),
+('Vidas Secas', 3, 'emprestado'),
+('Grande Sertão: Veredas', 4, 'disponivel');
 
 INSERT INTO clientes (nome) VALUES
 ('Ana Souza'),
