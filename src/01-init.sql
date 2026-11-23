@@ -19,9 +19,9 @@ CREATE TABLE public.emprestimos (
 	criado_em TIMESTAMPTZ NOT NULL DEFAULT now(),
 	atualizado_em TIMESTAMPTZ NOT NULL DEFAULT now(),
 
-	CONSTRAINT fk_emprestimos_livro
+	CONSTRAINT fk_emprestimos_livros
 		FOREIGN KEY (livro_id) REFERENCES livros(id) ON DELETE RESTRICT,
-	CONSTRAINT fk_emprestimos_cliente
+	CONSTRAINT fk_emprestimos_clientes
 		FOREIGN KEY (cliente_id) REFERENCES clientes(id) ON DELETE RESTRICT
 );
 
