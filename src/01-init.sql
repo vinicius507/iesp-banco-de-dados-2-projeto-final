@@ -19,6 +19,8 @@ CREATE TABLE public.livros (
 		FOREIGN KEY (autor_id) REFERENCES autores(id) ON DELETE RESTRICT
 );
 
+CREATE INDEX idx_livros_autores ON public.livros (autor_id);
+
 CREATE TABLE public.clientes (
 	id INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
 	nome VARCHAR(255) NOT NULL,
@@ -40,6 +42,10 @@ CREATE TABLE public.emprestimos (
 	CONSTRAINT fk_emprestimos_clientes
 		FOREIGN KEY (cliente_id) REFERENCES clientes(id) ON DELETE RESTRICT
 );
+
+CREATE INDEX idx_emprestimos_livros ON public.emprestimos (livro_id);
+
+CREATE INDEX idx_emprestimos_clientes ON public.emprestimos (cliente_id);
 
 CREATE FUNCTION registrar_data_de_atualizacao() RETURNS TRIGGER
 LANGUAGE plpgsql AS $$
