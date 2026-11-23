@@ -47,32 +47,3 @@ CREATE TRIGGER tg_emprestimos_registrar_atualizado_em
 BEFORE UPDATE ON emprestimos
 FOR EACH ROW
 EXECUTE FUNCTION registrar_data_de_atualizacao();
-
-INSERT INTO livros (nome) VALUES
-('Dom Casmuro'),
-('O Cortiço'),
-('Memórias Póstumas de Brás Cubas'),
-('Vidas Secas'),
-('Grande Sertão: Veredas');
-
-
-INSERT INTO clientes (nome) VALUES
-('Ana Souza'),
-('Bruno Lima'),
-('Carla Mendes'),
-('Diego Ferreira');
-
-INSERT INTO emprestimos (cliente_id, livro_id) VALUES
-(1, 1),
-(1, 2),
-(2, 4);
-
-SELECT * FROM livros;
-SELECT * FROM clientes;
-SELECT * FROM emprestimos;
-
-UPDATE livros SET nome = 'Dom Casmurro' WHERE nome = 'Dom Casmuro';
-
-SELECT * FROM livros;
-SELECT * FROM clientes;
-SELECT * FROM emprestimos;
