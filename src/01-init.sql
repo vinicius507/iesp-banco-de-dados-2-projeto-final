@@ -74,3 +74,64 @@ CREATE TRIGGER tg_emprestimos_registrar_atualizado_em
 BEFORE UPDATE ON emprestimos
 FOR EACH ROW
 EXECUTE FUNCTION registrar_data_de_atualizacao();
+
+CREATE FUNCTION validar_disponibilidade_do_livro() RETURNS TRIGGER
+LANGUAGE plpgsql AS $$
+DECLARE
+  status_atual livros.status%TYPE;
+BEGIN
+  SELECT status INTO status_atual
+  FROM livros
+  WHERE id = NEW.livro_id
+  FOR UPDATE;
+
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'Livro % não existe', NEW.livro_id;
+  END IF;
+
+  IF status_atual <> 'disponivel' THEN
+    RAISE EXCEPTION 'Livro % não está disponível para empréstimo (status atual: %)',
+      NEW.livro_id, status_atual;
+  END IF;
+
+  RETURN NEW;
+END;
+$$;
+
+CREATE TRIGGER tg_emprestimos_validar_disponibilidade
+BEFORE INSERT ON emprestimos
+FOR EACH ROW
+EXECUTE FUNCTION validar_disponibilidade_do_livro();
+
+CREATE FUNCTION marcar_livro_como_emprestado() RETURNS TRIGGER
+LANGUAGE plpgsql AS $$
+BEGIN
+  UPDATE livros
+  SET status = 'emprestado'
+  WHERE id = NEW.livro_id;
+
+  RETURN NULL;
+END;
+$$;
+
+CREATE TRIGGER tg_emprestimos_marcar_livro_emprestado
+AFTER INSERT ON emprestimos
+FOR EACH ROW
+EXECUTE FUNCTION marcar_livro_como_emprestado();
+
+CREATE FUNCTION devolver_livro() RETURNS TRIGGER
+LANGUAGE plpgsql AS $$
+BEGIN
+  UPDATE livros
+  SET status = 'disponivel'
+  WHERE id = NEW.livro_id;
+
+  RETURN NULL;
+END;
+$$;
+
+CREATE TRIGGER tg_emprestimos_devolver_livro
+AFTER UPDATE OF devolvido_em ON emprestimos
+FOR EACH ROW
+WHEN (OLD.devolvido_em IS NULL AND NEW.devolvido_em IS NOT NULL)
+EXECUTE FUNCTION devolver_livro();
