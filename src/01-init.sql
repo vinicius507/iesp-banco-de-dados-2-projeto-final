@@ -47,7 +47,7 @@ CREATE INDEX idx_emprestimos_livros ON public.emprestimos (livro_id);
 
 CREATE INDEX idx_emprestimos_clientes ON public.emprestimos (cliente_id);
 
-CREATE FUNCTION registrar_data_de_atualizacao() RETURNS TRIGGER
+CREATE FUNCTION fn_registrar_atualizado_em() RETURNS TRIGGER
 LANGUAGE plpgsql AS $$
 BEGIN
   NEW.atualizado_em = now();
@@ -58,24 +58,24 @@ $$;
 CREATE TRIGGER tg_autores_registrar_atualizado_em
 BEFORE UPDATE ON autores
 FOR EACH ROW
-EXECUTE FUNCTION registrar_data_de_atualizacao();
+EXECUTE FUNCTION fn_registrar_atualizado_em();
 
 CREATE TRIGGER tg_livros_registrar_atualizado_em
 BEFORE UPDATE ON livros
 FOR EACH ROW
-EXECUTE FUNCTION registrar_data_de_atualizacao();
+EXECUTE FUNCTION fn_registrar_atualizado_em();
 
 CREATE TRIGGER tg_clientes_registrar_atualizado_em
 BEFORE UPDATE ON clientes
 FOR EACH ROW
-EXECUTE FUNCTION registrar_data_de_atualizacao();
+EXECUTE FUNCTION fn_registrar_atualizado_em();
 
 CREATE TRIGGER tg_emprestimos_registrar_atualizado_em
 BEFORE UPDATE ON emprestimos
 FOR EACH ROW
-EXECUTE FUNCTION registrar_data_de_atualizacao();
+EXECUTE FUNCTION fn_registrar_atualizado_em();
 
-CREATE FUNCTION validar_disponibilidade_do_livro() RETURNS TRIGGER
+CREATE FUNCTION fn_emprestimos_validar_disponibilidade() RETURNS TRIGGER
 LANGUAGE plpgsql AS $$
 DECLARE
   status_atual livros.status%TYPE;
@@ -101,9 +101,9 @@ $$;
 CREATE TRIGGER tg_emprestimos_validar_disponibilidade
 BEFORE INSERT ON emprestimos
 FOR EACH ROW
-EXECUTE FUNCTION validar_disponibilidade_do_livro();
+EXECUTE FUNCTION fn_emprestimos_validar_disponibilidade();
 
-CREATE FUNCTION marcar_livro_como_emprestado() RETURNS TRIGGER
+CREATE FUNCTION fn_emprestimos_marcar_livro_emprestado() RETURNS TRIGGER
 LANGUAGE plpgsql AS $$
 BEGIN
   UPDATE livros
@@ -117,9 +117,9 @@ $$;
 CREATE TRIGGER tg_emprestimos_marcar_livro_emprestado
 AFTER INSERT ON emprestimos
 FOR EACH ROW
-EXECUTE FUNCTION marcar_livro_como_emprestado();
+EXECUTE FUNCTION fn_emprestimos_marcar_livro_emprestado();
 
-CREATE FUNCTION devolver_livro() RETURNS TRIGGER
+CREATE FUNCTION fn_emprestimos_devolver_livro() RETURNS TRIGGER
 LANGUAGE plpgsql AS $$
 BEGIN
   UPDATE livros
@@ -133,5 +133,5 @@ $$;
 CREATE TRIGGER tg_emprestimos_devolver_livro
 AFTER UPDATE OF devolvido_em ON emprestimos
 FOR EACH ROW
-WHEN (OLD.devolvido_em IS NULL AND NEW.devolvido_em IS NOT NULL)
-EXECUTE FUNCTION devolver_livro();
+WHEN (old.devolvido_em IS NULL AND new.devolvido_em IS NOT NULL)
+EXECUTE FUNCTION fn_emprestimos_devolver_livro();
