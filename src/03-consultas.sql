@@ -7,7 +7,7 @@ SELECT
 	round(sum(f.qtd_atrasados)::NUMERIC / sum(f.qtd_emprestimos) * 100, 1)
 		AS taxa_atraso_pct
 FROM dw.fato_emprestimos AS f
-JOIN dw.dim_data AS d ON d.data_id = f.data_emprestimo_id
+JOIN dw.dim_data AS d ON d.data = f.data_emprestimo
 GROUP BY rollup (d.ano, d.mes)
 ORDER BY d.ano, d.mes;
 
@@ -18,7 +18,7 @@ SELECT
 	sum(f.qtd_emprestimos) AS emprestimos
 FROM dw.fato_emprestimos AS f
 JOIN dw.dim_livro AS l ON l.livro_id = f.livro_id
-JOIN dw.dim_data AS d ON d.data_id = f.data_emprestimo_id
+JOIN dw.dim_data AS d ON d.data = f.data_emprestimo
 GROUP BY cube (l.autor_nome, d.ano)
 ORDER BY l.autor_nome, d.ano;
 
@@ -30,8 +30,8 @@ SELECT
 	)											AS mes_devolucao,
 	sum(f.qtd_emprestimos)						AS emprestimos
 FROM dw.fato_emprestimos AS f
-JOIN dw.dim_data AS de ON de.data_id = f.data_emprestimo_id
-LEFT JOIN dw.dim_data AS dd ON dd.data_id = f.data_devolucao_id
+JOIN dw.dim_data AS de ON de.data = f.data_emprestimo
+LEFT JOIN dw.dim_data AS dd ON dd.data = f.data_devolucao
 GROUP BY mes_emprestimo, mes_devolucao
 ORDER BY mes_emprestimo, mes_devolucao;
 
@@ -67,7 +67,7 @@ SELECT
 	count(DISTINCT f.cliente_id)						AS leitores_distintos
 FROM dw.fato_emprestimos AS f
 JOIN dw.dim_livro AS l ON l.livro_id = f.livro_id
-JOIN dw.dim_data AS d ON d.data_id = f.data_emprestimo_id
+JOIN dw.dim_data AS d ON d.data = f.data_emprestimo
 WHERE d.data BETWEEN DATE '2025-01-01' AND DATE '2025-12-31'
 GROUP BY l.autor_nome
 ORDER BY posicao, l.autor_nome;

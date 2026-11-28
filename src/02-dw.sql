@@ -2,30 +2,23 @@ CREATE SCHEMA dw;
 
 CREATE MATERIALIZED VIEW dw.dim_data AS
 SELECT
-	to_char(s.d, 'YYYYMMDD')::INT		AS data_id,
-	s.d									AS data,
-	extract(YEAR FROM s.d)::INT			AS ano,
-	extract(QUARTER FROM s.d)::INT		AS trimestre,
-	extract(MONTH FROM s.d)::INT		AS mes,
+	g.d::DATE							AS data,
+	extract(YEAR FROM g.d)::INT			AS ano,
+	extract(MONTH FROM g.d)::INT		AS mes,
 	(ARRAY[
 		'janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho',
 		'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'
-	])[extract(MONTH FROM s.d)::INT]	AS mes_nome,
-	extract(DAY FROM s.d)::INT			AS dia,
-	extract(ISODOW FROM s.d)::INT		AS dia_semana,
+	])[extract(MONTH FROM g.d)::INT]	AS mes_nome,
+	extract(ISODOW FROM g.d)::INT		AS dia_semana,
 	(ARRAY[
 		'segunda-feira', 'terça-feira', 'quarta-feira', 'quinta-feira',
 		'sexta-feira', 'sábado', 'domingo'
-	])[extract(ISODOW FROM s.d)::INT]	AS dia_semana_nome,
-	extract(ISODOW FROM s.d) IN (6, 7)	AS fim_de_semana
-FROM (
-	SELECT g.ts::DATE AS d
-	FROM generate_series(
-			TIMESTAMP '2020-01-01', TIMESTAMP '2030-12-31', INTERVAL '1 day'
-		) AS g (ts)
-) AS s;
+	])[extract(ISODOW FROM g.d)::INT]	AS dia_semana_nome
+FROM generate_series(
+		DATE '2020-01-01', DATE '2030-12-31', INTERVAL '1 day'
+	) AS g (d);
 
-CREATE UNIQUE INDEX uq_dim_data_data_id ON dw.dim_data (data_id);
+CREATE UNIQUE INDEX uq_dim_data_data ON dw.dim_data (data);
 
 CREATE MATERIALIZED VIEW dw.dim_livro AS
 SELECT
@@ -64,25 +57,25 @@ WITH
 	)
 
 SELECT
-	e.id										AS emprestimo_id,
+	e.id									AS emprestimo_id,
 	e.livro_id,
 	e.cliente_id,
-	to_char(e.dt_emp, 'YYYYMMDD')::INT			AS data_emprestimo_id,
-	to_char(e.devolver_ate, 'YYYYMMDD')::INT	AS data_prevista_id,
-	to_char(e.dt_dev, 'YYYYMMDD')::INT			AS data_devolucao_id,
-	1::SMALLINT									AS qtd_emprestimos,
+	e.dt_emp								AS data_emprestimo,
+	e.devolver_ate							AS data_prevista,
+	e.dt_dev								AS data_devolucao,
+	1::SMALLINT								AS qtd_emprestimos,
 	(CASE WHEN e.dt_dev IS NULL THEN 0 ELSE 1 END)::SMALLINT
 		AS qtd_devolvidos,
 	(CASE WHEN e.dt_ref > e.devolver_ate THEN 1 ELSE 0 END)::SMALLINT
 		AS qtd_atrasados,
-	e.dt_ref - e.dt_emp							AS dias_emprestado,
-	greatest(0, e.dt_ref - e.devolver_ate)		AS dias_atraso,
+	e.dt_ref - e.dt_emp						AS dias_emprestado,
+	greatest(0, e.dt_ref - e.devolver_ate)	AS dias_atraso,
 	CASE
 		WHEN e.dt_dev IS NULL THEN 'em aberto'
 		WHEN e.dt_dev <= e.devolver_ate THEN 'no prazo'
 		WHEN e.dt_dev - e.devolver_ate <= 7 THEN '1-7 dias'
 		ELSE '>7 dias'
-	END											AS faixa_atraso
+	END										AS faixa_atraso
 FROM e;
 
 CREATE UNIQUE INDEX uq_fato_emprestimos_emprestimo_id
@@ -93,7 +86,7 @@ CREATE INDEX idx_fato_emprestimos_livro ON dw.fato_emprestimos (livro_id);
 CREATE INDEX idx_fato_emprestimos_cliente ON dw.fato_emprestimos (cliente_id);
 
 CREATE INDEX idx_fato_emprestimos_data_emprestimo
-ON dw.fato_emprestimos (data_emprestimo_id);
+ON dw.fato_emprestimos (data_emprestimo);
 
 CREATE PROCEDURE dw.pr_carregar_dw()
 LANGUAGE plpgsql AS $$
